@@ -1,0 +1,23 @@
+{
+  "period": "1998–2022 men’s FIFA World Cup finals",
+  "input_rows": 45847,
+  "excluded_ambiguous_rows": 2,
+  "historical_matches_used": 45845,
+  "world_cup_matches": 448,
+  "draws_including_shootouts": 107,
+  "underdog_wins": 96,
+  "underdog_win_pct_all_matches": 21.428571428571427,
+  "underdog_win_pct_decisive_matches": 28.152492668621704,
+  "major_upsets_150_points": 18,
+  "major_underdog_opportunities_150_points": 132,
+  "largest_upset": {
+    "date": "2022-12-02",
+    "home_team": "Cameroon",
+    "away_team": "Brazil",
+    "home_score": 1,
+    "away_score": 0,
+    "winner": "Cameroon",
+    "absolute_gap": 378.1900871506725
+  },
+  "source_sha256": "6c1f2119f7da6808432c33fba863aa5a43c74c09a5ad5c982e33f7d01080da18"
+}
