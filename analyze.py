@@ -3,6 +3,8 @@ from collections import defaultdict
 from pathlib import Path
 import hashlib
 import json
+import math
+from numbers import Real
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -31,7 +33,21 @@ def load_matches():
     return raw, clean, raw.loc[ambiguous]
 
 
+def expected_score(gap):
+    """Stable Elo expected score, including extreme finite rating gaps."""
+    if isinstance(gap, bool) or not isinstance(gap, Real) or not math.isfinite(gap):
+        raise ValueError('Rating gap must be a finite number')
+    # Only exponentiate nonpositive values to avoid overflow.
+    tail = 10 ** (-abs(gap) / 400)
+    return 1 / (1 + tail) if gap >= 0 else tail / (1 + tail)
+
+
 def rate_matches(matches, k=20, home_advantage=100):
+    for name, value in [('k', k), ('home_advantage', home_advantage)]:
+        if isinstance(value, bool) or not isinstance(value, Real) or not math.isfinite(value):
+            raise ValueError(f'{name} must be a finite number')
+    if k <= 0 or home_advantage < 0:
+        raise ValueError('k must be positive and home_advantage nonnegative')
     ratings = defaultdict(lambda: 1500.0)
     records = []
     # All matches on a date use ratings from the start of that date. This avoids
@@ -41,7 +57,7 @@ def rate_matches(matches, k=20, home_advantage=100):
         for row in day.itertuples(index=False):
             home, away = ratings[row.home_team], ratings[row.away_team]
             gap = home - away + (0 if row.neutral else home_advantage)
-            expected = 1 / (1 + 10 ** (-gap / 400))
+            expected = expected_score(gap)
             actual = 1.0 if row.home_score > row.away_score else (0.0 if row.home_score < row.away_score else 0.5)
             change = k * (actual - expected)
             changes[row.home_team] += change
@@ -131,3 +147,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
