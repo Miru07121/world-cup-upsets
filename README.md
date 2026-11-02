@@ -82,3 +82,19 @@ A 150-point threshold is an exploratory choice, not a natural statistical cutoff
 Historical match data: **Mart Jürisoo and contributors**, [international_results](https://github.com/martj42/international_results), [source CSV](https://raw.githubusercontent.com/martj42/international_results/master/results.csv), [data definitions](https://github.com/martj42/international_results/blob/master/README.md). Retrieved October 18, 2026 UTC; transformed only by retaining dates through December 31, 2022 and serializing the CSV. The input hash is recorded in `results/summary.json`.
 
 This is a community-maintained dataset of FIFA World Cup and other international matches, not an official FIFA data feed. The source documentation describes historical team-name mappings and score conventions. Upstream data terms apply; this repository does not claim ownership of the source data. This project is independent of FIFA.
+
+## Numerical safeguards and automated checks
+
+`python -m unittest test_analysis.py -v` runs the offline synthetic regression
+suite; GitHub Actions also runs it on pushes and pull requests. It checks
+same-day update order, future-result isolation, home advantage, draws, invalid
+parameters, expected-score symmetry, and extreme finite rating gaps.
+
+`rate_matches` requires a finite positive K and finite nonnegative home advantage.
+`expected_score(gap)` computes the same Elo expectation while avoiding overflow
+for very large negative gaps; sufficiently extreme gaps round to 0 or 1.
+It remains an expected match score, not a calibrated win probability.
+The unit suite does not download data or replace the complete historical rebuild:
+run `python analyze.py` separately to regenerate the full portfolio outputs.
+
+
