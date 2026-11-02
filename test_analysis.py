@@ -1,7 +1,7 @@
 """Targeted checks for temporal leakage and Elo update semantics."""
 import unittest
 import pandas as pd
-from analyze import rate_matches
+from analyze import rate_matches, expected_score
 
 
 def fixtures(rows):
@@ -12,6 +12,27 @@ def fixtures(rows):
 
 
 class EloTests(unittest.TestCase):
+    def test_expected_score_extremes_and_symmetry(self):
+        self.assertEqual(expected_score(0), .5)
+        self.assertEqual(expected_score(-1000000), 0)
+        self.assertEqual(expected_score(1000000), 1)
+        for gap in [100, 400, 800]:
+            self.assertAlmostEqual(expected_score(gap) + expected_score(-gap), 1)
+        self.assertAlmostEqual(expected_score(400), 10 / 11)
+
+    def test_invalid_rating_parameters(self):
+        data = fixtures([['2022-11-20', 'A', 'B', 1, 0, True]])
+        for kwargs in [{'k': 0}, {'k': -1}, {'k': float('inf')},
+                       {'k': True}, {'home_advantage': -1},
+                       {'home_advantage': float('nan')}, {'k': '20'}]:
+            with self.subTest(kwargs=kwargs):
+                with self.assertRaises(ValueError):
+                    rate_matches(data, **kwargs)
+        for gap in [float('inf'), float('nan'), True, '100']:
+            with self.subTest(gap=gap):
+                with self.assertRaises(ValueError):
+                    expected_score(gap)
+
     def test_neutral_win_updates_next_day_only(self):
         data = fixtures([['2022-11-20', 'A', 'B', 1, 0, True],
                          ['2022-11-21', 'A', 'B', 0, 0, True]])
@@ -45,3 +66,4 @@ class EloTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
